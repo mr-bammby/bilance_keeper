@@ -29,7 +29,7 @@ class Infoscreen(GridLayout):
         self.add_widget(Label(text=""))
         self.add_widget(Label(text=program_date))
 
-        Clock.schedule_once(self.enter_mainscreen, 2)
+        Clock.schedule_once(self.enter_mainscreen, 3)
 
     def enter_mainscreen(self, _):
         bilance_calculator.screen_manager.current = 'Main'
