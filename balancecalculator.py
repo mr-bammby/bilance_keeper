@@ -113,8 +113,8 @@ class BalanceCalculator:
         self.week = date(date.today().year, date.today().month, date.today().day).isocalendar()[1]
         self.day = date.today().day
         self.logged_in = 0
-        self.db_file = "db/" + user + ".db"
-        self.db_directory ='/db'
+        self.db_directory ="db"
+        self.db_file = self.db_directory + "/" + user + ".db"
         self.conn = None
         self.create_connection()
        # self.pull_history()
@@ -123,10 +123,12 @@ class BalanceCalculator:
 
     def create_dbDirectory(self):
         """checkes if folder for database exist, if it doesn't creates new one"""
-        if not os.path.exists(self.db_directory):
-            os.makedirs(self.db_directory)
+        path = os.path.join(os.getcwd(), self.db_directory)
+        if not os.path.exists(path):
+            os.makedirs(path)
             print("creating directory for local database")
-
+        else:
+            print("databse already exists")
     def create_connection(self):
         """ create a database connection to the SQLite database
             specified by db_file
