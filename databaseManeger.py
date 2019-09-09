@@ -212,7 +212,7 @@ class databaseManeger:
 
         for item in self.default_classes:
             self.insert_class(item)
-        print("init_end")
+
     def create_dbDirectory(self):
         #doesnt_work
         """checkes if folder for database exist, if it doesn't creates new one"""
@@ -306,7 +306,6 @@ class databaseManeger:
         else:
             print("can not insert account, db not connected, table_accounts")
             return "db_not_connected_error table_accounts"
-
     def insert_transfer(self, sort, amount, day_id, week_id, month_id, year_id, class_id = None , subclass_id = None, subsubclass_id = None, comment = ""):
         """inserts new traansfer to transfer table"""
         if self.account_connected:
@@ -364,6 +363,12 @@ class databaseManeger:
         """inserts new subclass to subclass table if it doesn't exist"""
         if self.account_connected:
             entry = None
+            try:
+                class_id = int(class_id)
+            except:
+                class_id = self.get_classID(class_id)
+                if type(class_id) == "str":
+                    return "unknown class"
             try :
                 with sqlite3.connect(self.db_file) as conn:
                     if conn != None:
@@ -388,12 +393,25 @@ class databaseManeger:
                 print(e)
                 return "database_error table_subclass"
         else:
-            print("can not insert class, account not connected, table_subclass")
+            print("can not insert subclass, account not connected, table_subclass")
             return "account_not_connected_error table_subclass"
     def insert_subsubclass(self, name,  class_id, subclass_id):
         """inserts new subsubclass to subsubclass table if it doesn't exist"""
         if self.account_connected:
             entry = None
+            try:
+                class_id = int(class_id)
+            except:
+                class_id = self.get_classID(class_id)
+                if type(class_id) == "str":
+                    return "unknown class"
+            try:
+                subclass_id = int(subclass_id)
+            except:
+                subclass_id = self.get_subclassID(subclass_id)
+                if type(subclass_id) == "str":
+                    return "unknown subclass"
+
             try :
                 with sqlite3.connect(self.db_file) as conn:
                     if conn != None:
@@ -418,7 +436,7 @@ class databaseManeger:
                 print(e)
                 return "database_error table_subsubclass"
         else:
-            print("can not insert class, account not connected, table_subsubclass")
+            print("can not insert subsubclass, account not connected, table_subsubclass")
             return "account_not_connected_error table_subsubclass"
     def insert_year(self, year,  begin_balance = 0 ):
         """inserts new year to years table if it doesn't exist"""
@@ -456,12 +474,13 @@ class databaseManeger:
                 print(e)
                 return "database_error table_year"
         else:
-            print("can not insert class, account not connected, table_year")
+            print("can not insert year, account not connected, table_year")
             return "account_not_connected_error table_year"
     def insert_month(self, year_id, month,  begin_balance = 0 ):
         """inserts new year to years table if it doesn't exist"""
         if self.account_connected:
             try:
+                year_id = int(year_id)
                 begin_balance = float(begin_balance)
                 month = int(month)
                 if 0 > month or month > 13:
@@ -494,12 +513,14 @@ class databaseManeger:
                 print(e)
                 return "database_error table_month"
         else:
-            print("can not insert class, account not connected, table_month")
+            print("can not insert month, account not connected, table_month")
             return "account_not_connected_error table_month"
     def insert_week(self, year_id, month_id, week, begin_balance = 0 ):
         """inserts new year to years table if it doesn't exist"""
         if self.account_connected:
             try:
+                year_id = int(year_id)
+                month_id=int(month_id)
                 begin_balance = float(begin_balance)
                 week = int(week)
                 if 0 > week or week > 53:
@@ -532,12 +553,15 @@ class databaseManeger:
                 print(e)
                 return "database_error table_week"
         else:
-            print("can not insert class, account not connected, table_week")
+            print("can not insert week, account not connected, table_week")
             return "account_not_connected_error table_week"
-    def insert_day(self, year_id, mont_id, week_id,  day,  begin_balance = 0 ):
+    def insert_day(self, year_id, month_id, week_id,  day,  begin_balance = 0 ):
         """inserts new year to years table if it doesn't exist"""
         if self.account_connected:
             try:
+                year_id = int(year_id)
+                month_id = int(month_id)
+                week_id = int(week_id)
                 begin_balance = float(begin_balance)
                 day = int(day)
                 if 0 > day or day > 31:
@@ -561,7 +585,7 @@ class databaseManeger:
                     if entry == None:
                         sql = ''' INSERT INTO days(account_id,year_id,month_id,week_id,day,begin_balance,end_balance)
                                   VALUES(?,?,?,?,?,?,?) '''
-                        day_tuple = (self.account_id, year_id, mont_id, week_id, day, begin_balance, begin_balance)
+                        day_tuple = (self.account_id, year_id, month_id, week_id, day, begin_balance, begin_balance)
                         cur = conn.cursor()
                         cur.execute(sql, day_tuple)
                         print("Inserted day: "+ str(day_tuple))
@@ -570,6 +594,359 @@ class databaseManeger:
                 print(e)
                 return "database_error table_day"
         else:
-            print("can not insert class, account not connected, table_day")
+            print("can not insert day, account not connected, table_day")
             return "account_not_connected_error table_day"
-
+    def get_classID(self, class_name):
+        if self.account_connected:
+            try :
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('SELECT * FROM class WHERE (name=? AND account_id)=?', (class_name, self.account_id))
+                        entry = cur.fetchone()
+                        if entry == None:
+                            return "error class_not_saved"
+                        return entry[0]
+                    else:
+                        return"database_error table_class"
+            except Error as e:
+                print(e)
+                return "database_error table_class"
+        else:
+            print("can not get classID, account not connected, table_class")
+            return "account_not_connected_error table_class"
+    def get_subclassID(self, subclass_name, class_id):
+        """returns classID according name and class_id"""
+        if self.account_connected:
+            try:
+                if type(class_id) is str:
+                    class_id = self.get_classID(class_id)
+                class_id = int(class_id)
+            except ValueError:
+                return "unexpected input"
+            try :
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('SELECT * FROM subclass WHERE (name=? AND class_id=? AND account_id=?)', (subclass_name,class_id,self.account_id))
+                        entry = cur.fetchone()
+                        if entry == None:
+                            return "error subclass_not_saved"
+                        return entry[0]
+                    else:
+                        return"error invalid_input"
+            except Error as e:
+                print(e)
+                return "database_error table_subclass"
+        else:
+            print("can not get subclassID, account not connected, table_subclass")
+            return "account_not_connected_error table_subclass"
+    def get_subsubclassID(self, subsubclass_name, class_id, subclass_id):
+        """returns subsubclassID according name, class_id and subclass id """
+        if self.account_connected:
+            try:
+                if type(class_id) is str:
+                    class_id = self.get_classID(class_id)
+                if type(subclass_id) is str:
+                    subclass_id = self.get_classID(subclass_id)
+                class_id = int(class_id)
+                subclass_id = int(subclass_id)
+            except ValueError:
+                return "unexpected input"
+            try :
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('SELECT * FROM subsubclass WHERE (name=? AND class_id=? AND subclass_id=? AND account_id=?)', (subsubclass_name,class_id,subclass_id,self.account_id))
+                        entry = cur.fetchone()
+                        if entry == None:
+                            return "error subsubclass_not_saved"
+                        return entry[0]
+                    else:
+                        return"error invalid_input"
+            except Error as e:
+                print(e)
+                return "database_error table_subsubclass"
+        else:
+            print("can not get subsubclassID, account not connected, table_subsubclass")
+            return "account_not_connected_error table_subsubclass"
+    def get_yearID(self, year_name):
+        """returns yearID according name"""
+        if self.account_connected:
+            try:
+                year_name = str(year_name)
+            except:
+                return "unexcepted input"
+            try :
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('SELECT * FROM years WHERE (year=? AND account_id=?)', (year_name,self.account_id))
+                        entry = cur.fetchone()
+                        if entry == None:
+                            return "error year_not_saved"
+                        return entry[0]
+                    else:
+                        return"database_error table_year"
+            except Error as e:
+                print(e)
+                return "database_error table_year"
+        else:
+            print("can not get yearID, account not connected, table_years")
+            return "account_not_connected_error table_year"
+    def get_monthID(self, month_name, year_id):
+        """returns monthID according name"""
+        if self.account_connected:
+            try:
+                month_name = str(int(month_name))
+                if type(year_id) is str:
+                    temp = self.get_yearID(year_id)
+                    if type(temp) is int:
+                        year_id = temp
+                year_id = int(year_id)
+            except:
+                return "unexcepted input"
+            try :
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('SELECT * FROM months WHERE (month=? AND year_id=? AND account_id=?)', (month_name, year_id, self.account_id))
+                        entry = cur.fetchone()
+                        if entry == None:
+                            return "error month_not_saved"
+                        return entry[0]
+                    else:
+                        return"database_error table_month"
+            except Error as e:
+                print(e)
+                return "database_error table_month"
+        else:
+            print("can not get monthID, account not connected, table_months")
+            return "account_not_connected_error table_month"
+    def get_weekID(self, week_name, year_id, month_id):
+        """returns weekID according name"""
+        if self.account_connected:
+            try:
+                week_name = str(int(week_name))
+                if type(year_id) is str:
+                    temp = self.get_yearID(year_id)
+                    if type(temp) is int:
+                        year_id = temp
+                if type(month_id) is str:
+                    temp = self.get_monthID(year_id, month_id)
+                    if type(temp) is int:
+                        month_id = temp
+                year_id = int(year_id)
+                month_id = int(month_id)
+            except:
+                return "unexcepted input"
+            try :
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('SELECT * FROM weeks WHERE (week=? AND year_id=? AND month_id=? AND account_id=?)', (week_name, year_id, month_id, self.account_id))
+                        entry = cur.fetchone()
+                        if entry == None:
+                            return "error week_not_saved"
+                        return entry[0]
+                    else:
+                        return"database_error table_week"
+            except Error as e:
+                print(e)
+                return "database_error table_week"
+        else:
+            print("can not get weekID, account not connected, table_weeks")
+            return "account_not_connected_error table_week"
+    def get_dayID(self, day_name, year_id, month_id, week_id):
+        """returns dayID according name"""
+        if self.account_connected:
+            try:
+                day_name = str(int(day_name))
+                if type(year_id) is str:
+                    temp = self.get_yearID(year_id)
+                    if type(temp) is int:
+                        year_id = temp
+                if type(month_id) is str:
+                    temp = self.get_monthID(year_id,month_id)
+                    if type(temp) is int:
+                        month_id = temp
+                if type(week_id) is str:
+                    temp = self.get_monthID(month_id, year_id, week_id)
+                    if type(temp) is int:
+                        week_id = temp
+                year_id = int(year_id)
+            except:
+                return "unexcepted input"
+            try :
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('SELECT * FROM days WHERE (day=? AND year_id=? AND month_id=? AND week_id=? AND account_id=?)', (day_name, year_id,month_id,week_id, self.account_id))
+                        entry = cur.fetchone()
+                        if entry == None:
+                            return "error day_not_saved"
+                        return entry[0]
+                    else:
+                        return"database_error table_day"
+            except Error as e:
+                print(e)
+                return "database_error table_day"
+        else:
+            print("can not get dayID, account not connected, table_days")
+            return "account_not_connected_error table_day"
+    def get_balance(self, type, id, time = "end"):
+        entry = None
+        if type == "year":
+            try :
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('SELECT * FROM years WHERE (year_id=?)', (id,))
+                        entry = cur.fetchone()
+                        if entry == None:
+                            return "error year_not_saved"
+                        if time == "end":
+                            return entry[4]
+                        elif time == "begin":
+                            return entry[3]
+                        else:
+                            return "unknown time"
+            except Error as e:
+                print(e)
+                return "database_error table_year"
+        elif type == "month":
+            try :
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('SELECT * FROM months WHERE (month_id=?)', (id,))
+                        entry = cur.fetchone()
+                        if entry == None:
+                            return "error month_not_saved"
+                        if time == "end":
+                            return entry[5]
+                        elif time == "begin":
+                            return entry[4]
+                        else:
+                            return "unknown time"
+            except Error as e:
+                print(e)
+                return "database_error table_month"
+        elif type == "week":
+            try :
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('SELECT * FROM weeks WHERE (week_id=?)', (id,))
+                        entry = cur.fetchone()
+                        if entry == None:
+                            return "error week_not_saved"
+                        if time == "end":
+                            return entry[6]
+                        elif time == "begin":
+                            return entry[5]
+                        else:
+                            return "unknown time"
+            except Error as e:
+                print(e)
+                return "database_error table_week"
+        elif type == "day":
+            try :
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('SELECT * FROM days WHERE (day_id=?)', (id,))
+                        entry = cur.fetchone()
+                        if entry == None:
+                            return "error day_not_saved"
+                        if time == "end":
+                            return entry[7]
+                        elif time == "begin":
+                            return entry[6]
+                        else:
+                            return "unknown time"
+            except Error as e:
+                print(e)
+                return "database_error table_day"
+        else:
+            return "unknown table name"
+    def set_balance(self, type, id, value, time = "end"):
+        if type == "year":
+            try :
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        if time == "end":
+                            sql = ''' UPDATE years
+                                SET end_balance = ? 
+                                WHERE year_id = ?'''
+                        elif time == "begin":
+                            sql = ''' UPDATE years
+                                SET begin_balance = ? 
+                                WHERE year_id = ?'''
+                        else:
+                            return "unknown time"
+                        cur.execute(sql, (value, id))
+            except Error as e:
+                print(e)
+                return "database_error table_year"
+        elif type == "month":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        if time == "end":
+                            sql = ''' UPDATE months
+                                SET end_balance = ? 
+                                WHERE month_id = ?'''
+                        elif time == "begin":
+                            sql = ''' UPDATE months
+                                SET begin_balance = ? 
+                                WHERE month_id = ?'''
+                        else:
+                            return "unknown time"
+                        cur.execute(sql, (value, id))
+            except Error as e:
+                print(e)
+                return "database_error table_month"
+        elif type == "week":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        if time == "end":
+                            sql = ''' UPDATE weeks
+                                SET end_balance = ? 
+                                WHERE week_id = ?'''
+                        elif time == "begin":
+                            sql = ''' UPDATE weeks
+                                SET begin_balance = ? 
+                                WHERE week_id = ?'''
+                        else:
+                            return "unknown time"
+                        cur.execute(sql, (value, id))
+            except Error as e:
+                print(e)
+                return "database_error table_week"
+        elif type == "day":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        if time == "end":
+                            sql = ''' UPDATE days
+                                SET end_balance = ? 
+                                WHERE day_id = ?'''
+                        elif time == "begin":
+                            sql = ''' UPDATE days
+                                SET begin_balance = ? 
+                                WHERE day_id = ?'''
+                        else:
+                            return "unknown time"
+                        cur.execute(sql, (value, id))
+            except Error as e:
+                print(e)
+                return "database_error table_day"
+        else:
+            return "unknown table name"
+        return 0

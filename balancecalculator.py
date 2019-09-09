@@ -3,6 +3,7 @@ from typing import NamedTuple
 from datetime import date
 import os
 from pathlib import Path
+from databaseManeger import databaseManeger
 
 
 
@@ -36,10 +37,17 @@ class BalanceCalculator:
         self.week = date(date.today().year, date.today().month, date.today().day).isocalendar()[1]
         self.day = date.today().day
 
-        print("init_end")
+        self.database = databaseManeger()
+        self.database.insert_month(1, "5", 10)
+        print(self.database.get_yearID(2020))
+        print(self.database.get_subsubclassID("palacinke", 1, 1))
+        year_id =self.database.get_yearID(2020)
+        print(self.database.get_balance("year", year_id))
 
 
 
+
+BalanceCalculator()
 
 
 
