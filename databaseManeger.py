@@ -377,7 +377,7 @@ class databaseManeger:
                 class_id = int(class_id)
             except:
                 class_id = self.get_classID(class_id)
-                if type(class_id) == "str":
+                if type(class_id) == str:
                     return "unknown class"
             try:
                 with sqlite3.connect(self.db_file) as conn:
@@ -414,13 +414,13 @@ class databaseManeger:
                 class_id = int(class_id)
             except:
                 class_id = self.get_classID(class_id)
-                if type(class_id) == "str":
+                if type(class_id) == str:
                     return "unknown class"
             try:
                 subclass_id = int(subclass_id)
             except:
                 subclass_id = self.get_subclassID(subclass_id)
-                if type(subclass_id) == "str":
+                if type(subclass_id) == str:
                     return "unknown subclass"
 
             try:
@@ -1100,7 +1100,22 @@ class databaseManeger:
                         cur.execute('SELECT * FROM transfer WHERE (account_id=?)', (self.account_id,))
                         entry = cur.fetchall()
                         if entry == None:
-                            return "error week_id"
+                            return "error account_id"
+                        return entry
+                    else:
+                        return "database_error table_transfers"
+            except Error as e:
+                print(e)
+                return "database_error table_transfers"
+        elif type == "transfer":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('SELECT * FROM transfer WHERE (transfer_id=?)', (self.id,))
+                        entry = cur.fetchone()
+                        if entry == None:
+                            return "error transfer_id"
                         return entry
                     else:
                         return "database_error table_transfers"
@@ -1109,3 +1124,132 @@ class databaseManeger:
                 return "database_error table_transfers"
         else:
             return "unknown type"
+    def delete(self, tableName, id):
+        if tableName == "transfer":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('DELETE FROM transfer WHERE (transfer_id=?)', (id,))
+                    else:
+                        return "database_error table_transfers"
+            except Error as e:
+                print(e)
+                return "database_error table_transfers"
+        elif tableName == "year":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('DELETE FROM years WHERE (year_id=?)', (id,))
+                    else:
+                        return "database_error table_years"
+            except Error as e:
+                print(e)
+                return "database_error table_years"
+        elif tableName == "month":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('DELETE FROM months WHERE (month_id=?)', (id,))
+                    else:
+                        return "database_error table_months"
+            except Error as e:
+                print(e)
+                return "database_error table_months"
+        elif tableName == "week":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('DELETE FROM weeks WHERE (week_id=?)', (id,))
+                    else:
+                        return "database_error table_weeks"
+            except Error as e:
+                print(e)
+                return "database_error table_weeks"
+        elif tableName == "day":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('DELETE FROM days WHERE (day_id=?)', (id,))
+                    else:
+                        return "database_error table_days"
+            except Error as e:
+                print(e)
+                return "database_error table_days"
+        elif tableName == "class":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('DELETE FROM class WHERE (class_id=?)', (id,))
+                    else:
+                        return "database_error table_class"
+            except Error as e:
+                print(e)
+                return "database_error table_class"
+        elif tableName == "subclass":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('DELETE FROM subclass WHERE (subclass_id=?)', (id,))
+                    else:
+                        return "database_error table_subclass"
+            except Error as e:
+                print(e)
+                return "database_error table_subclass"
+        elif tableName == "subsubclass":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('DELETE FROM subsubclass WHERE (subsubclass_id=?)', (id,))
+                    else:
+                        return "database_error table_subsubclass"
+            except Error as e:
+                print(e)
+                return "database_error table_subsubclass"
+        elif tableName == "transfers_from_class":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('DELETE FROM transfer WHERE (class_id=?)', (id,))
+                    else:
+                        return "database_error table_transfers"
+            except Error as e:
+                print(e)
+                return "database_error table_transfers"
+        elif tableName == "transfers_from_subclass":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('DELETE FROM transfer WHERE (subclass_id=?)', (id,))
+                    else:
+                        return "database_error table_transfers"
+            except Error as e:
+                print(e)
+                return "database_error table_transfers"
+        elif tableName == "transfers_from_subsubclass":
+            try:
+                with sqlite3.connect(self.db_file) as conn:
+                    if conn != None:
+                        cur = conn.cursor()
+                        cur.execute('DELETE FROM transfer WHERE (subsubclass_id=?)', (id,))
+                    else:
+                        return "database_error table_transfers"
+            except Error as e:
+                print(e)
+                return "database_error table_transfers"
+        else:
+            return "error unknow:type"
+
+
+
+
+
